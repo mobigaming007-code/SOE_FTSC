@@ -1,26 +1,392 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --fts-sky: #0ea5e9;
+  --fts-sky-dark: #0284c7;
+  --fts-cyan: #06b6d4;
+  --fts-teal: #14b8a6;
+  --fts-navy: #0f172a;
+  --fts-gold: #f59e0b;
+  --fts-rose: #f43f5e;
+  --fts-bg: #f8fafc;
+  --fts-card: rgba(255, 255, 255, 0.86);
+  --fts-border: rgba(226, 232, 240, 0.85);
+  --fts-shadow: 0 22px 70px rgba(15, 23, 42, 0.08);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+* {
+  box-sizing: border-box;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  min-height: 100vh;
+  margin: 0;
+  font-family:
+    var(--font-be-vietnam-pro),
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+  background:
+    radial-gradient(
+      circle at top left,
+      rgba(14, 165, 233, 0.18),
+      transparent 34rem
+    ),
+    radial-gradient(
+      circle at top right,
+      rgba(20, 184, 166, 0.14),
+      transparent 32rem
+    ),
+    radial-gradient(
+      circle at bottom left,
+      rgba(245, 158, 11, 0.08),
+      transparent 28rem
+    ),
+    #f8fafc;
+  color: #0f172a;
+}
+
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+button[class*="bg-gradient-to-r"],
+a[class*="bg-gradient-to-r"],
+button[class*="bg-slate-950"],
+a[class*="bg-slate-950"],
+button[class*="bg-slate-900"],
+a[class*="bg-slate-900"],
+button[class*="bg-sky-500"],
+a[class*="bg-sky-500"],
+button[class*="bg-sky-600"],
+a[class*="bg-sky-600"],
+button[class*="bg-teal-500"],
+a[class*="bg-teal-500"],
+button[class*="bg-teal-600"],
+a[class*="bg-teal-600"],
+button[class*="bg-amber-500"],
+a[class*="bg-amber-500"],
+button[class*="bg-amber-600"],
+a[class*="bg-amber-600"],
+button[class*="bg-rose-500"],
+a[class*="bg-rose-500"],
+button[class*="bg-rose-600"],
+a[class*="bg-rose-600"],
+button[class*="bg-white/15"],
+a[class*="bg-white/15"],
+button[class*="bg-white/25"],
+a[class*="bg-white/25"] {
+  color: #fff !important;
+}
+
+button[class*="bg-sky-50"],
+a[class*="bg-sky-50"] {
+  color: #075985 !important;
+}
+
+button[class*="bg-teal-50"],
+a[class*="bg-teal-50"] {
+  color: #0f766e !important;
+}
+
+button[class*="bg-amber-50"],
+a[class*="bg-amber-50"] {
+  color: #92400e !important;
+}
+
+button[class*="bg-rose-50"],
+a[class*="bg-rose-50"] {
+  color: #be123c !important;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+::selection {
+  background: rgba(14, 165, 233, 0.22);
+  color: #0f172a;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f8fafc;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #0ea5e9, #14b8a6);
+  border-radius: 999px;
+  border: 2px solid #f8fafc;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #0284c7, #0f766e);
+}
+
+.fts-card {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--fts-border);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.94),
+    rgba(255, 255, 255, 0.78)
+  );
+  box-shadow: var(--fts-shadow);
+  backdrop-filter: blur(18px);
+}
+
+.fts-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.7), transparent 38%),
+    radial-gradient(
+      circle at top right,
+      rgba(14, 165, 233, 0.08),
+      transparent 24rem
+    );
+}
+
+.fts-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+.fts-hero {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background:
+    radial-gradient(
+      circle at 15% 15%,
+      rgba(255, 255, 255, 0.24),
+      transparent 18rem
+    ),
+    radial-gradient(
+      circle at 85% 10%,
+      rgba(20, 184, 166, 0.25),
+      transparent 20rem
+    ),
+    linear-gradient(135deg, #0f172a 0%, #0369a1 42%, #14b8a6 100%);
+  box-shadow: 0 28px 80px rgba(14, 165, 233, 0.24);
+}
+
+.fts-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.28;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.16) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.16) 1px, transparent 1px);
+  background-size: 38px 38px;
+  mask-image: linear-gradient(to bottom, black, transparent);
+}
+
+.fts-hero > * {
+  position: relative;
+  z-index: 1;
+}
+
+.fts-button-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 1rem;
+  background: linear-gradient(135deg, #0ea5e9, #14b8a6);
+  padding: 0.75rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 900;
+  color: white;
+  box-shadow: 0 18px 35px rgba(14, 165, 233, 0.24);
+  transition: 180ms ease;
+}
+
+.fts-button-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 22px 45px rgba(14, 165, 233, 0.32);
+}
+
+.fts-button-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 1rem;
+  border: 1px solid rgba(226, 232, 240, 0.95);
+  background: rgba(255, 255, 255, 0.85);
+  padding: 0.75rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 900;
+  color: #334155;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.06);
+  transition: 180ms ease;
+}
+
+.fts-button-secondary:hover {
+  transform: translateY(-1px);
+  border-color: rgba(14, 165, 233, 0.28);
+  background: #f0f9ff;
+  color: #0369a1;
+}
+
+.fts-input {
+  width: 100%;
+  border-radius: 1rem;
+  border: 1px solid rgba(226, 232, 240, 0.95);
+  background: rgba(255, 255, 255, 0.88);
+  padding: 0.8rem 1rem;
+  outline: none;
+  transition: 180ms ease;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.035);
+}
+
+.fts-input:focus {
+  border-color: rgba(14, 165, 233, 0.65);
+  box-shadow:
+    0 0 0 4px rgba(14, 165, 233, 0.12),
+    0 14px 30px rgba(15, 23, 42, 0.06);
+}
+
+.fts-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border-radius: 999px;
+  border: 1px solid rgba(125, 211, 252, 0.5);
+  background: rgba(240, 249, 255, 0.88);
+  padding: 0.35rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 900;
+  color: #0369a1;
+}
+
+.fts-page-grid {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.35;
+  background-image:
+    linear-gradient(rgba(14, 165, 233, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(14, 165, 233, 0.08) 1px, transparent 1px);
+  background-size: 42px 42px;
+  mask-image: radial-gradient(circle at top, black, transparent 75%);
+}
+
+.fts-orb {
+  position: fixed;
+  pointer-events: none;
+  z-index: 0;
+  border-radius: 999px;
+  filter: blur(42px);
+  opacity: 0.28;
+}
+
+.fts-orb-one {
+  top: 5rem;
+  left: 18rem;
+  width: 18rem;
+  height: 18rem;
+  background: #0ea5e9;
+}
+
+.fts-orb-two {
+  right: 4rem;
+  top: 14rem;
+  width: 16rem;
+  height: 16rem;
+  background: #14b8a6;
+}
+
+.fts-orb-three {
+  left: 30%;
+  bottom: 2rem;
+  width: 14rem;
+  height: 14rem;
+  background: #f59e0b;
+  opacity: 0.12;
+}
+
+@keyframes fts-float {
+  0% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-7px);
+  }
+
+  100% {
+    transform: translateY(0);
+  }
+}
+
+.fts-float {
+  animation: fts-float 4.8s ease-in-out infinite;
+}
+
+@keyframes fts-shine {
+  from {
+    transform: translateX(-120%);
+  }
+
+  to {
+    transform: translateX(120%);
+  }
+}
+
+.fts-shine {
+  position: relative;
+  overflow: hidden;
+}
+
+.fts-shine::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  width: 45%;
+  transform: translateX(-120%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.38),
+    transparent
+  );
+  animation: fts-shine 4.5s ease-in-out infinite;
+}
+
+@media (max-width: 768px) {
+  .fts-orb {
+    opacity: 0.18;
+  }
+
+  .fts-orb-one {
+    left: -6rem;
+  }
+
+  .fts-orb-two {
+    right: -8rem;
+  }
 }
