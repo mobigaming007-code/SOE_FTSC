@@ -8,8 +8,8 @@ import { getPermissions, getRoles, subscribeAuthChanged } from "@/lib/auth";
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [permissions, setPermissions] = useState<string[]>([]);
-  const [roles, setRoles] = useState<string[]>([]);
+  const [permissions, setPermissions] = useState<string[]>(() => getPermissions());
+  const [roles, setRoles] = useState<string[]>(() => getRoles());
 
   useEffect(() => {
     function syncAuthState() {
@@ -17,9 +17,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       setRoles(getRoles());
     }
 
-    queueMicrotask(() => {
-      syncAuthState();
-    });
+    syncAuthState();
 
     return subscribeAuthChanged(syncAuthState);
   }, []);

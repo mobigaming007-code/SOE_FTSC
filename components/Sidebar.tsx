@@ -39,6 +39,7 @@ const leadershipRoles = [
 
 const unitManagerRoles = [
   "TRUONG_DON_VI",
+  "PHO_DON_VI",
   "TRUONG_PHONG",
   "PHO_TRUONG_PHONG",
   "TRUONG_BAN",
@@ -53,17 +54,15 @@ const unitManagerRoles = [
 
 const attendanceAdminRoles = [
   "SUPER_ADMIN",
-  "ADMIN",
   "HR",
   ...leadershipRoles,
   ...unitManagerRoles,
 ];
 
 const leaveAdminRoles = attendanceAdminRoles;
-const peopleAdminRoles = ["SUPER_ADMIN", "ADMIN", "HR", ...leadershipRoles, ...unitManagerRoles];
+const peopleAdminRoles = ["SUPER_ADMIN", "HR", ...leadershipRoles, ...unitManagerRoles];
 const payrollAdminRoles = [
   "SUPER_ADMIN",
-  "ADMIN",
   "CHU_TICH",
   "PHO_CHU_TICH",
   "GIAM_DOC",
@@ -73,12 +72,11 @@ const payrollAdminRoles = [
 ];
 const documentAdminRoles = [
   "SUPER_ADMIN",
-  "ADMIN",
   "HR",
   ...leadershipRoles,
   ...unitManagerRoles,
 ];
-const configAdminRoles = ["SUPER_ADMIN", "ADMIN"];
+const configAdminRoles = ["SUPER_ADMIN"];
 
 const dashboardPermissions = [
   "admin.manage_users",
@@ -400,5 +398,3 @@ function PortalLink({
     </Link>
   );
 }
-
-
