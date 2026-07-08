@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Image from "next/image";
 import Link from "next/link";
@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import {
   ADMIN_PORTAL_ROLES,
   canAccessAdminPortal,
+  canShowAdminMenuItem,
   canShowMenuItemForRoles,
 } from "@/lib/permissions";
 
@@ -21,6 +22,7 @@ type MenuItem = {
   href: string;
   marker: string;
   roles: string[];
+  permissions?: string[];
 };
 
 const leadershipRoles = [
@@ -37,30 +39,31 @@ const leadershipRoles = [
 
 const unitManagerRoles = [
   "TRUONG_DON_VI",
-  "PHO_DON_VI",
   "TRUONG_PHONG",
   "PHO_TRUONG_PHONG",
   "TRUONG_BAN",
   "PHO_TRUONG_BAN",
-  "TRUONG_BAN_CHI_NHANH",
-  "PHO_TRUONG_BAN_CHI_NHANH",
   "CHANH_VAN_PHONG",
   "PHO_CHANH_VAN_PHONG",
   "CHANH_VAN_PHONG_CHI_NHANH",
   "PHO_CHANH_VAN_PHONG_CHI_NHANH",
+  "TRUONG_BAN_CHI_NHANH",
+  "PHO_TRUONG_BAN_CHI_NHANH",
 ];
 
 const attendanceAdminRoles = [
   "SUPER_ADMIN",
+  "ADMIN",
   "HR",
   ...leadershipRoles,
   ...unitManagerRoles,
 ];
 
 const leaveAdminRoles = attendanceAdminRoles;
-const peopleAdminRoles = ["SUPER_ADMIN", "HR", ...leadershipRoles, ...unitManagerRoles];
+const peopleAdminRoles = ["SUPER_ADMIN", "ADMIN", "HR", ...leadershipRoles, ...unitManagerRoles];
 const payrollAdminRoles = [
   "SUPER_ADMIN",
+  "ADMIN",
   "CHU_TICH",
   "PHO_CHU_TICH",
   "GIAM_DOC",
@@ -70,11 +73,26 @@ const payrollAdminRoles = [
 ];
 const documentAdminRoles = [
   "SUPER_ADMIN",
+  "ADMIN",
   "HR",
   ...leadershipRoles,
   ...unitManagerRoles,
 ];
-const configAdminRoles = ["SUPER_ADMIN"];
+const configAdminRoles = ["SUPER_ADMIN", "ADMIN"];
+
+const dashboardPermissions = [
+  "admin.manage_users",
+  "admin.manage_config",
+  "people.view",
+  "attendance.view",
+  "attendance.approve",
+  "leave.view",
+  "leave.approve",
+  "payroll.view",
+  "payroll.manage",
+  "documents.view",
+  "documents.manage",
+];
 
 const employeeItems: MenuItem[] = [
   {
@@ -139,60 +157,70 @@ const adminItems: MenuItem[] = [
     href: "/admin",
     marker: "QT",
     roles: ADMIN_PORTAL_ROLES,
+    permissions: dashboardPermissions,
   },
   {
     label: "Tổng quan",
     href: "/dashboard",
     marker: "TQ",
     roles: ADMIN_PORTAL_ROLES,
+    permissions: dashboardPermissions,
   },
   {
     label: "Nhân sự",
     href: "/people",
     marker: "NS",
     roles: peopleAdminRoles,
+    permissions: ["people.view", "people.update", "admin.manage_users"],
   },
   {
     label: "Bảng công",
     href: "/attendance",
     marker: "BC",
     roles: attendanceAdminRoles,
+    permissions: ["attendance.view", "attendance.approve"],
   },
   {
     label: "Duyệt chấm công",
     href: "/attendance/approvals",
     marker: "DC",
     roles: attendanceAdminRoles,
+    permissions: ["attendance.approve"],
   },
   {
     label: "QR chấm công",
     href: "/attendance/qr",
     marker: "QR",
     roles: attendanceAdminRoles,
+    permissions: ["attendance.view", "attendance.approve"],
   },
   {
     label: "Nghỉ phép",
     href: "/leave",
     marker: "NP",
     roles: leaveAdminRoles,
+    permissions: ["leave.view", "leave.approve"],
   },
   {
     label: "Lương",
     href: "/payroll",
     marker: "LG",
     roles: payrollAdminRoles,
+    permissions: ["payroll.view", "payroll.manage"],
   },
   {
     label: "Văn bản",
     href: "/documents",
     marker: "VB",
     roles: documentAdminRoles,
+    permissions: ["documents.view", "documents.manage"],
   },
   {
     label: "Cấu hình",
     href: "/admin/config",
     marker: "CH",
     roles: configAdminRoles,
+    permissions: ["admin.manage_config"],
   },
 ];
 
@@ -234,9 +262,18 @@ export default function Sidebar({
   const portal = getPortal(pathname, canUseAdmin);
   const isAdminPortal = portal === "admin";
 
-  const visibleItems = (isAdminPortal ? adminItems : employeeItems).filter(
-    (item) => canShowMenuItemForRoles(roles, item.roles),
-  );
+  const visibleItems = (isAdminPortal ? adminItems : employeeItems).filter((item) => {
+    if (!isAdminPortal) {
+      return canShowMenuItemForRoles(roles, item.roles);
+    }
+
+    return canShowAdminMenuItem(
+      permissions,
+      roles,
+      item.roles,
+      item.permissions || [],
+    );
+  });
   const activeHref = getActiveHref(pathname, visibleItems);
 
   return (

@@ -40,6 +40,27 @@ export function hasAnyPermission(
   return requiredPermissions.some((permission) => list.includes(permission));
 }
 
+export function hasAnyExplicitPermission(
+  permissions: string[] | undefined,
+  requiredPermissions: string[],
+) {
+  if (!requiredPermissions.length) {
+    return false;
+  }
+
+  const list = permissions || [];
+
+  if (list.length === 0) {
+    return false;
+  }
+
+  if (list.includes("*") || list.includes("SUPER_ADMIN")) {
+    return true;
+  }
+
+  return requiredPermissions.some((permission) => list.includes(permission));
+}
+
 export function canShowMenuItem(
   permissions: string[] | undefined,
   requiredPermissions: string[],
@@ -47,32 +68,48 @@ export function canShowMenuItem(
   return hasAnyPermission(permissions, requiredPermissions);
 }
 
-export const ADMIN_PORTAL_ROLES = [
-  "SUPER_ADMIN",
+export const COMPANY_ADMIN_ROLES = [
   "GIAM_DOC",
   "PHO_GIAM_DOC",
   "CHU_TICH",
   "PHO_CHU_TICH",
   "HR",
   "KE_TOAN",
-  "TRUONG_DON_VI",
-  "PHO_DON_VI",
   "TRUONG_PHONG",
   "PHO_TRUONG_PHONG",
-  "CHU_NHIEM_CHI_NHANH",
-  "PHO_CHU_NHIEM_CHI_NHANH",
+  "TRUONG_DON_VI",
+];
+
+export const CLUB_TOTAL_ADMIN_ROLES = [
   "TONG_CHU_NHIEM",
   "PHO_TONG_CHU_NHIEM",
-  "CHANH_VAN_PHONG",
   "TRUONG_BAN",
+  "PHO_TRUONG_BAN",
+  "CHANH_VAN_PHONG",
   "PHO_CHANH_VAN_PHONG",
+  "TRUONG_PHONG",
+  "PHO_TRUONG_PHONG",
+];
+
+export const CLUB_BRANCH_ADMIN_ROLES = [
+  "CHU_NHIEM_CHI_NHANH",
+  "PHO_CHU_NHIEM_CHI_NHANH",
+  "PHO_CHU_NHIEM_TT_CHI_NHANH",
   "CHANH_VAN_PHONG_CHI_NHANH",
   "PHO_CHANH_VAN_PHONG_CHI_NHANH",
-  "PHO_CHU_NHIEM_TT_CHI_NHANH",
-  "PHO_TRUONG_BAN",
   "TRUONG_BAN_CHI_NHANH",
   "PHO_TRUONG_BAN_CHI_NHANH",
 ];
+
+export const ADMIN_PORTAL_ROLES = Array.from(
+  new Set([
+    "SUPER_ADMIN",
+    "ADMIN",
+    ...COMPANY_ADMIN_ROLES,
+    ...CLUB_TOTAL_ADMIN_ROLES,
+    ...CLUB_BRANCH_ADMIN_ROLES,
+  ]),
+);
 
 export const EMPLOYEE_ONLY_ROLES = [
   "CHUYEN_VIEN",
@@ -80,9 +117,11 @@ export const EMPLOYEE_ONLY_ROLES = [
   "TINH_NGUYEN_VIEN",
   "NGUOI_XEM",
   "THANH_VIEN",
+  "NHAN_VIEN",
+  "EMPLOYEE",
 ];
 
-const ADMIN_PORTAL_PERMISSIONS = [
+export const ADMIN_PORTAL_PERMISSIONS = [
   "admin.manage_users",
   "admin.manage_config",
   "people.view",
@@ -98,55 +137,198 @@ const ADMIN_PORTAL_PERMISSIONS = [
 ];
 
 const ROLE_ALIASES: Record<string, string> = {
+  // Kỹ thuật / tài khoản quản trị chung
+  SUPERADMIN: "SUPER_ADMIN",
+  "SUPER ADMIN": "SUPER_ADMIN",
+  SUPER_ADMIN: "SUPER_ADMIN",
+  ROOT: "SUPER_ADMIN",
+  ADMIN: "ADMIN",
+  QUAN_TRI: "ADMIN",
+  "QUẢN TRỊ": "ADMIN",
+  "QUAN TRI": "ADMIN",
+  "QUẢN TRỊ VIÊN": "ADMIN",
+  "QUAN TRI VIEN": "ADMIN",
   "QUẢN TRỊ TỐI CAO": "SUPER_ADMIN",
   "QUAN TRI TOI CAO": "SUPER_ADMIN",
+
+  // Công ty
   "GIÁM ĐỐC": "GIAM_DOC",
   "GIAM DOC": "GIAM_DOC",
+  GIAM_DOC: "GIAM_DOC",
+  DIRECTOR: "GIAM_DOC",
   "PHÓ GIÁM ĐỐC": "PHO_GIAM_DOC",
   "PHO GIAM DOC": "PHO_GIAM_DOC",
+  PHO_GIAM_DOC: "PHO_GIAM_DOC",
+  "DEPUTY DIRECTOR": "PHO_GIAM_DOC",
   "CHỦ TỊCH": "CHU_TICH",
   "CHU TICH": "CHU_TICH",
+  CHU_TICH: "CHU_TICH",
+  CHAIRMAN: "CHU_TICH",
+  PRESIDENT: "CHU_TICH",
   "PHÓ CHỦ TỊCH": "PHO_CHU_TICH",
   "PHO CHU TICH": "PHO_CHU_TICH",
-  "TRƯỞNG ĐƠN VỊ": "TRUONG_DON_VI",
-  "TRUONG DON VI": "TRUONG_DON_VI",
+  PHO_CHU_TICH: "PHO_CHU_TICH",
+  "VICE CHAIRMAN": "PHO_CHU_TICH",
+  "VICE PRESIDENT": "PHO_CHU_TICH",
+  HR: "HR",
+  "NHÂN SỰ": "HR",
+  "NHAN SU": "HR",
+  "NHÂN SỰ HR": "HR",
+  "NHAN SU HR": "HR",
+  "NHÂN SỰ/ HR": "HR",
+  "NHAN SU/ HR": "HR",
+  "HÀNH CHÍNH NHÂN SỰ": "HR",
+  "HANH CHINH NHAN SU": "HR",
+  "KẾ TOÁN": "KE_TOAN",
+  "KE TOAN": "KE_TOAN",
+  KE_TOAN: "KE_TOAN",
+  ACCOUNTANT: "KE_TOAN",
   "TRƯỞNG PHÒNG": "TRUONG_PHONG",
   "TRUONG PHONG": "TRUONG_PHONG",
+  TRUONG_PHONG: "TRUONG_PHONG",
+  "HEAD OF DEPARTMENT": "TRUONG_PHONG",
+  "PHÓ TRƯỞNG PHÒNG": "PHO_TRUONG_PHONG",
+  "PHO TRUONG PHONG": "PHO_TRUONG_PHONG",
+  PHO_TRUONG_PHONG: "PHO_TRUONG_PHONG",
+  "DEPUTY HEAD OF DEPARTMENT": "PHO_TRUONG_PHONG",
   "QUẢN LÝ": "TRUONG_DON_VI",
   "QUAN LY": "TRUONG_DON_VI",
   QUAN_LY: "TRUONG_DON_VI",
   MANAGER: "TRUONG_DON_VI",
-  CHANH_VP_BCN: "CHANH_VAN_PHONG",
-  "CHANH VAN PHONG BAN CHU NHIEM NHOM": "CHANH_VAN_PHONG",
-  "CHANH VAN PHONG BAN CHU NHIEM CHI NHANH":
-    "CHANH_VAN_PHONG_CHI_NHANH",
-  "PHO CHANH VAN PHONG BAN CHU NHIEM CHI NHANH":
-    "PHO_CHANH_VAN_PHONG_CHI_NHANH",
-  "PHÓ ĐƠN VỊ": "PHO_DON_VI",
-  "PHO DON VI": "PHO_DON_VI",
-  "PHÓ TRƯỞNG PHÒNG": "PHO_TRUONG_PHONG",
-  "PHO TRUONG PHONG": "PHO_TRUONG_PHONG",
-  THANH_VIEN: "TINH_NGUYEN_VIEN",
-  "THÀNH VIÊN": "TINH_NGUYEN_VIEN",
-  "THANH VIEN": "TINH_NGUYEN_VIEN",
-  "TÌNH NGUYỆN VIÊN": "TINH_NGUYEN_VIEN",
-  "TINH NGUYEN VIEN": "TINH_NGUYEN_VIEN",
+  "TRƯỞNG ĐƠN VỊ": "TRUONG_DON_VI",
+  "TRUONG DON VI": "TRUONG_DON_VI",
+  TRUONG_DON_VI: "TRUONG_DON_VI",
+  "QUẢN LÝ TRƯỞNG ĐƠN VỊ": "TRUONG_DON_VI",
+  "QUAN LY TRUONG DON VI": "TRUONG_DON_VI",
+  "QUẢN LÝ/ TRƯỞNG ĐƠN VỊ": "TRUONG_DON_VI",
+  "QUAN LY/ TRUONG DON VI": "TRUONG_DON_VI",
+
+  // CLB - cấp Tổng
+  "TỔNG CHỦ NHIỆM": "TONG_CHU_NHIEM",
+  "TONG CHU NHIEM": "TONG_CHU_NHIEM",
+  TONG_CHU_NHIEM: "TONG_CHU_NHIEM",
   "PHÓ TỔNG CHỦ NHIỆM": "PHO_TONG_CHU_NHIEM",
   "PHO TONG CHU NHIEM": "PHO_TONG_CHU_NHIEM",
+  PHO_TONG_CHU_NHIEM: "PHO_TONG_CHU_NHIEM",
+  "TRƯỞNG BAN": "TRUONG_BAN",
+  "TRUONG BAN": "TRUONG_BAN",
+  TRUONG_BAN: "TRUONG_BAN",
+  "PHÓ TRƯỞNG BAN": "PHO_TRUONG_BAN",
+  "PHO TRUONG BAN": "PHO_TRUONG_BAN",
+  PHO_TRUONG_BAN: "PHO_TRUONG_BAN",
+  "CHÁNH VĂN PHÒNG": "CHANH_VAN_PHONG",
+  "CHANH VAN PHONG": "CHANH_VAN_PHONG",
+  "CHÁNH VĂN PHÒNG BAN CHỦ NHIỆM NHÓM": "CHANH_VAN_PHONG",
+  "CHANH VAN PHONG BAN CHU NHIEM NHOM": "CHANH_VAN_PHONG",
+  "CHÁNH VP BCN NHÓM": "CHANH_VAN_PHONG",
+  "CHANH VP BCN NHOM": "CHANH_VAN_PHONG",
+  CHANH_VP_BCN: "CHANH_VAN_PHONG",
+  CHANH_VAN_PHONG: "CHANH_VAN_PHONG",
+  "PHÓ CHÁNH VĂN PHÒNG": "PHO_CHANH_VAN_PHONG",
+  "PHO CHANH VAN PHONG": "PHO_CHANH_VAN_PHONG",
+  "PHÓ CHÁNH VĂN PHÒNG BAN CHỦ NHIỆM NHÓM": "PHO_CHANH_VAN_PHONG",
+  "PHO CHANH VAN PHONG BAN CHU NHIEM NHOM": "PHO_CHANH_VAN_PHONG",
+  "PHÓ CHÁNH VP BCN NHÓM": "PHO_CHANH_VAN_PHONG",
+  "PHO CHANH VP BCN NHOM": "PHO_CHANH_VAN_PHONG",
+  PHO_CHANH_VAN_PHONG: "PHO_CHANH_VAN_PHONG",
+
+  // CLB - chi nhánh
+  "CHỦ NHIỆM CHI NHÁNH": "CHU_NHIEM_CHI_NHANH",
+  "CHU NHIEM CHI NHANH": "CHU_NHIEM_CHI_NHANH",
+  CHU_NHIEM_CHI_NHANH: "CHU_NHIEM_CHI_NHANH",
+  "PHÓ CHỦ NHIỆM CHI NHÁNH": "PHO_CHU_NHIEM_CHI_NHANH",
+  "PHO CHU NHIEM CHI NHANH": "PHO_CHU_NHIEM_CHI_NHANH",
+  PHO_CHU_NHIEM_CHI_NHANH: "PHO_CHU_NHIEM_CHI_NHANH",
+  "PHÓ CHỦ NHIỆM THƯỜNG TRỰC CHI NHÁNH": "PHO_CHU_NHIEM_TT_CHI_NHANH",
+  "PHO CHU NHIEM THUONG TRUC CHI NHANH": "PHO_CHU_NHIEM_TT_CHI_NHANH",
+  "PHÓ CN THƯỜNG TRỰC CHI NHÁNH": "PHO_CHU_NHIEM_TT_CHI_NHANH",
+  "PHO CN THUONG TRUC CHI NHANH": "PHO_CHU_NHIEM_TT_CHI_NHANH",
+  PHO_CHU_NHIEM_TT_CHI_NHANH: "PHO_CHU_NHIEM_TT_CHI_NHANH",
+  "CHÁNH VĂN PHÒNG BAN CHỦ NHIỆM CHI NHÁNH": "CHANH_VAN_PHONG_CHI_NHANH",
+  "CHANH VAN PHONG BAN CHU NHIEM CHI NHANH": "CHANH_VAN_PHONG_CHI_NHANH",
+  "CHÁNH VĂN PHÒNG CHI NHÁNH": "CHANH_VAN_PHONG_CHI_NHANH",
+  "CHANH VAN PHONG CHI NHANH": "CHANH_VAN_PHONG_CHI_NHANH",
+  "CHÁNH VP BCN CHI NHÁNH": "CHANH_VAN_PHONG_CHI_NHANH",
+  "CHANH VP BCN CHI NHANH": "CHANH_VAN_PHONG_CHI_NHANH",
+  CHANH_VAN_PHONG_CHI_NHANH: "CHANH_VAN_PHONG_CHI_NHANH",
+  "PHÓ CHÁNH VĂN PHÒNG BAN CHỦ NHIỆM CHI NHÁNH": "PHO_CHANH_VAN_PHONG_CHI_NHANH",
+  "PHO CHANH VAN PHONG BAN CHU NHIEM CHI NHANH": "PHO_CHANH_VAN_PHONG_CHI_NHANH",
+  "PHÓ CHÁNH VĂN PHÒNG CHI NHÁNH": "PHO_CHANH_VAN_PHONG_CHI_NHANH",
+  "PHO CHANH VAN PHONG CHI NHANH": "PHO_CHANH_VAN_PHONG_CHI_NHANH",
+  "PHÓ CHÁNH VP BCN CHI NHÁNH": "PHO_CHANH_VAN_PHONG_CHI_NHANH",
+  "PHO CHANH VP BCN CHI NHANH": "PHO_CHANH_VAN_PHONG_CHI_NHANH",
+  PHO_CHANH_VAN_PHONG_CHI_NHANH: "PHO_CHANH_VAN_PHONG_CHI_NHANH",
   "TRƯỞNG BAN THUỘC CHI NHÁNH": "TRUONG_BAN_CHI_NHANH",
   "TRUONG BAN THUOC CHI NHANH": "TRUONG_BAN_CHI_NHANH",
+  "TRƯỞNG BAN CHI NHÁNH": "TRUONG_BAN_CHI_NHANH",
+  "TRUONG BAN CHI NHANH": "TRUONG_BAN_CHI_NHANH",
+  TRUONG_BAN_CHI_NHANH: "TRUONG_BAN_CHI_NHANH",
   "PHÓ TRƯỞNG BAN THUỘC CHI NHÁNH": "PHO_TRUONG_BAN_CHI_NHANH",
   "PHO TRUONG BAN THUOC CHI NHANH": "PHO_TRUONG_BAN_CHI_NHANH",
-  "KẾ TOÁN": "KE_TOAN",
-  "KE TOAN": "KE_TOAN",
-  "NHÂN SỰ": "HR",
-  "NHAN SU": "HR",
+  "PHÓ TRƯỞNG BAN CHI NHÁNH": "PHO_TRUONG_BAN_CHI_NHANH",
+  "PHO TRUONG BAN CHI NHANH": "PHO_TRUONG_BAN_CHI_NHANH",
+  PHO_TRUONG_BAN_CHI_NHANH: "PHO_TRUONG_BAN_CHI_NHANH",
+
+  // Nhân viên / không tự vào cổng quản trị
+  "CHUYÊN VIÊN": "CHUYEN_VIEN",
+  "CHUYEN VIEN": "CHUYEN_VIEN",
+  CHUYEN_VIEN: "CHUYEN_VIEN",
+  "THỰC TẬP SINH": "THUC_TAP_SINH",
+  "THUC TAP SINH": "THUC_TAP_SINH",
+  THUC_TAP_SINH: "THUC_TAP_SINH",
+  "TÌNH NGUYỆN VIÊN": "TINH_NGUYEN_VIEN",
+  "TINH NGUYEN VIEN": "TINH_NGUYEN_VIEN",
+  TINH_NGUYEN_VIEN: "TINH_NGUYEN_VIEN",
+  "THÀNH VIÊN": "THANH_VIEN",
+  "THANH VIEN": "THANH_VIEN",
+  THANH_VIEN: "THANH_VIEN",
+  "NGƯỜI XEM": "NGUOI_XEM",
+  "NGUOI XEM": "NGUOI_XEM",
+  NGUOI_XEM: "NGUOI_XEM",
 };
 
-function normalizeRoleCode(role: string) {
-  const text = String(role || "").trim().toUpperCase();
+function stripVietnameseMarks(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/Đ/g, "D")
+    .replace(/đ/g, "d");
+}
 
-  return ROLE_ALIASES[text] || text;
+function normalizeRoleLookupKey(role: string) {
+  return String(role || "")
+    .trim()
+    .toUpperCase()
+    .replace(/[\\/|,;:.()\[\]{}\-]+/g, " ")
+    .replace(/_/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+export function normalizeRoleCode(role: string) {
+  const original = String(role || "").trim();
+  const upper = original.toUpperCase();
+  const codeLike = upper.replace(/\s+/g, "_");
+  const key = normalizeRoleLookupKey(original);
+  const unsignedKey = normalizeRoleLookupKey(stripVietnameseMarks(original));
+  const underscoreKey = key.replace(/\s+/g, "_");
+  const unsignedUnderscoreKey = unsignedKey.replace(/\s+/g, "_");
+
+  return (
+    ROLE_ALIASES[upper] ||
+    ROLE_ALIASES[codeLike] ||
+    ROLE_ALIASES[key] ||
+    ROLE_ALIASES[unsignedKey] ||
+    ROLE_ALIASES[underscoreKey] ||
+    ROLE_ALIASES[unsignedUnderscoreKey] ||
+    unsignedUnderscoreKey
+  );
+}
+
+export function normalizeRoleList(roles: string[] | undefined) {
+  return Array.from(
+    new Set((roles || []).map((role) => normalizeRoleCode(role)).filter(Boolean)),
+  );
 }
 
 export function canAccessAdminPortal(
@@ -165,7 +347,7 @@ export function canAccessAdminPortal(
     return true;
   }
 
-  const roleList = (roles || []).map((role) => normalizeRoleCode(role));
+  const roleList = normalizeRoleList(roles);
 
   return roleList.some((role) => ADMIN_PORTAL_ROLES.includes(role));
 }
@@ -178,9 +360,26 @@ export function canShowMenuItemForRoles(
     return true;
   }
 
-  const roleList = (roles || []).map((role) => normalizeRoleCode(role));
+  const roleList = normalizeRoleList(roles);
 
-  return roleList.some((role) =>
-    role === "SUPER_ADMIN" || allowedRoles.includes(role),
+  return roleList.some(
+    (role) => role === "SUPER_ADMIN" || role === "ADMIN" || allowedRoles.includes(role),
   );
+}
+
+export function canShowAdminMenuItem(
+  permissions: string[] | undefined,
+  roles: string[] | undefined,
+  allowedRoles: string[],
+  requiredPermissions: string[] = [],
+) {
+  if (hasAnyExplicitPermission(permissions, requiredPermissions)) {
+    return true;
+  }
+
+  if ((permissions || []).includes("*") || (permissions || []).includes("SUPER_ADMIN")) {
+    return true;
+  }
+
+  return canShowMenuItemForRoles(roles, allowedRoles);
 }

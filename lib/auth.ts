@@ -1,4 +1,5 @@
 import type { AuthUser } from "@/types/api";
+import { normalizeRoleCode } from "@/lib/permissions";
 
 const TOKEN_KEY = "fts_office_token";
 const USER_KEY = "fts_office_user";
@@ -13,6 +14,17 @@ type UnknownRecord = Record<string, unknown>;
 
 function isRecord(value: unknown): value is UnknownRecord {
   return typeof value === "object" && value !== null;
+}
+
+function unique(values: string[]) {
+  return Array.from(new Set(values.filter(Boolean)));
+}
+
+function splitTextList(value: string) {
+  return value
+    .split(/[;,|]/g)
+    .map((item) => item.trim())
+    .filter(Boolean);
 }
 
 function notifyAuthChanged() {
@@ -33,41 +45,100 @@ export function subscribeAuthChanged(callback: () => void) {
   };
 }
 
-export function normalizePermissions(input: unknown): string[] {
-  if (!Array.isArray(input)) return [];
+function extractPermissionValues(input: unknown): string[] {
+  if (!input) return [];
 
-  return input
-    .map((item) => {
-      if (typeof item === "string") return item;
+  if (typeof input === "string") {
+    return splitTextList(input);
+  }
 
-      if (isRecord(item)) {
-        if (typeof item.permission_code === "string")
-          return item.permission_code;
-        if (typeof item.code === "string") return item.code;
+  if (Array.isArray(input)) {
+    return input.flatMap((item) => extractPermissionValues(item));
+  }
+
+  if (isRecord(input)) {
+    const directFields = [
+      "permission_code",
+      "permissionCode",
+      "code",
+      "name",
+      "permission",
+      "Permission",
+    ];
+
+    for (const field of directFields) {
+      const value = input[field];
+
+      if (typeof value === "string") {
+        return splitTextList(value);
       }
+    }
 
-      return "";
-    })
-    .filter(Boolean);
+    const nestedFields = ["permissions", "Permissions", "quyen", "Quyen"];
+
+    return nestedFields.flatMap((field) => extractPermissionValues(input[field]));
+  }
+
+  return [];
+}
+
+export function normalizePermissions(input: unknown): string[] {
+  return unique(extractPermissionValues(input));
+}
+
+function extractRoleValues(input: unknown): string[] {
+  if (!input) return [];
+
+  if (typeof input === "string") {
+    return splitTextList(input);
+  }
+
+  if (Array.isArray(input)) {
+    return input.flatMap((item) => extractRoleValues(item));
+  }
+
+  if (isRecord(input)) {
+    const directFields = [
+      "role_code",
+      "roleCode",
+      "code",
+      "role_name",
+      "roleName",
+      "role",
+      "Role",
+      "chucDanh",
+      "ChucDanh",
+      "chuc_danh",
+      "Chuc_danh",
+      "Chức danh",
+      "Chuc danh",
+      "capQuyen",
+      "CapQuyen",
+      "cap_quyen",
+      "Cấp quyền",
+      "Cap quyen",
+      "position",
+      "Position",
+      "title",
+      "Title",
+    ];
+
+    const directValues = directFields.flatMap((field) => {
+      const value = input[field];
+      return typeof value === "string" ? splitTextList(value) : [];
+    });
+
+    const nestedFields = ["roles", "Roles", "roleList", "RoleList", "chucVu", "ChucVu"];
+    const nestedValues = nestedFields.flatMap((field) => extractRoleValues(input[field]));
+
+    return [...directValues, ...nestedValues];
+  }
+
+  return [];
 }
 
 export function normalizeRoles(input: unknown): string[] {
-  if (!Array.isArray(input)) return [];
-
-  return input
-    .map((item) => {
-      if (typeof item === "string") return item;
-
-      if (isRecord(item)) {
-        if (typeof item.role_code === "string") return item.role_code;
-        if (typeof item.code === "string") return item.code;
-        if (typeof item.role_name === "string") return item.role_name;
-      }
-
-      return "";
-    })
-    .map((role) => role.trim().toUpperCase())
-    .filter(Boolean);
+  return unique(extractRoleValues(input).map((role) => normalizeRoleCode(role)));
 }
 
 export function markAuthVerified() {
@@ -104,13 +175,16 @@ export function saveAuth(
 ) {
   if (typeof window === "undefined") return;
 
+  const normalizedPermissions = unique([
+    ...normalizePermissions(permissions),
+    ...normalizePermissions(user),
+  ]);
+  const normalizedRoles = unique([...normalizeRoles(roles), ...normalizeRoles(user)]);
+
   localStorage.setItem(TOKEN_KEY, token);
   localStorage.setItem(USER_KEY, JSON.stringify(user || null));
-  localStorage.setItem(
-    PERMISSIONS_KEY,
-    JSON.stringify(normalizePermissions(permissions)),
-  );
-  localStorage.setItem(ROLES_KEY, JSON.stringify(normalizeRoles(roles)));
+  localStorage.setItem(PERMISSIONS_KEY, JSON.stringify(normalizedPermissions));
+  localStorage.setItem(ROLES_KEY, JSON.stringify(normalizedRoles));
 
   markAuthVerified();
   notifyAuthChanged();
@@ -128,12 +202,15 @@ export function updateStoredUser(
   if (permissions !== undefined) {
     localStorage.setItem(
       PERMISSIONS_KEY,
-      JSON.stringify(normalizePermissions(permissions)),
+      JSON.stringify(unique([...normalizePermissions(permissions), ...normalizePermissions(user)])),
     );
   }
 
   if (roles !== undefined) {
-    localStorage.setItem(ROLES_KEY, JSON.stringify(normalizeRoles(roles)));
+    localStorage.setItem(
+      ROLES_KEY,
+      JSON.stringify(unique([...normalizeRoles(roles), ...normalizeRoles(user)])),
+    );
   }
 
   notifyAuthChanged();
