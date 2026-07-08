@@ -82,6 +82,21 @@ export const EMPLOYEE_ONLY_ROLES = [
   "THANH_VIEN",
 ];
 
+const ADMIN_PORTAL_PERMISSIONS = [
+  "admin.manage_users",
+  "admin.manage_config",
+  "people.view",
+  "people.update",
+  "attendance.view",
+  "attendance.approve",
+  "leave.view",
+  "leave.approve",
+  "payroll.view",
+  "payroll.manage",
+  "documents.view",
+  "documents.manage",
+];
+
 const ROLE_ALIASES: Record<string, string> = {
   "QUẢN TRỊ TỐI CAO": "SUPER_ADMIN",
   "QUAN TRI TOI CAO": "SUPER_ADMIN",
@@ -135,9 +150,21 @@ function normalizeRoleCode(role: string) {
 }
 
 export function canAccessAdminPortal(
-  _permissions: string[] | undefined,
+  permissions: string[] | undefined,
   roles: string[] | undefined,
 ) {
+  const permissionList = permissions || [];
+
+  if (
+    permissionList.includes("*") ||
+    permissionList.includes("SUPER_ADMIN") ||
+    ADMIN_PORTAL_PERMISSIONS.some((permission) =>
+      permissionList.includes(permission),
+    )
+  ) {
+    return true;
+  }
+
   const roleList = (roles || []).map((role) => normalizeRoleCode(role));
 
   return roleList.some((role) => ADMIN_PORTAL_ROLES.includes(role));

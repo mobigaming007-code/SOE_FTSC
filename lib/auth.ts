@@ -5,6 +5,7 @@ const USER_KEY = "fts_office_user";
 const PERMISSIONS_KEY = "fts_office_permissions";
 const ROLES_KEY = "fts_office_roles";
 const AUTH_VERIFIED_AT_KEY = "fts_office_auth_verified_at";
+const AUTH_CHANGED_EVENT = "fts_office_auth_changed";
 
 const DEFAULT_AUTH_VERIFY_TTL_MS = 10 * 60 * 1000;
 
@@ -12,6 +13,24 @@ type UnknownRecord = Record<string, unknown>;
 
 function isRecord(value: unknown): value is UnknownRecord {
   return typeof value === "object" && value !== null;
+}
+
+function notifyAuthChanged() {
+  if (typeof window === "undefined") return;
+
+  window.dispatchEvent(new Event(AUTH_CHANGED_EVENT));
+}
+
+export function subscribeAuthChanged(callback: () => void) {
+  if (typeof window === "undefined") return () => undefined;
+
+  window.addEventListener(AUTH_CHANGED_EVENT, callback);
+  window.addEventListener("storage", callback);
+
+  return () => {
+    window.removeEventListener(AUTH_CHANGED_EVENT, callback);
+    window.removeEventListener("storage", callback);
+  };
 }
 
 export function normalizePermissions(input: unknown): string[] {
@@ -94,6 +113,7 @@ export function saveAuth(
   localStorage.setItem(ROLES_KEY, JSON.stringify(normalizeRoles(roles)));
 
   markAuthVerified();
+  notifyAuthChanged();
 }
 
 export function updateStoredUser(
@@ -115,6 +135,8 @@ export function updateStoredUser(
   if (roles !== undefined) {
     localStorage.setItem(ROLES_KEY, JSON.stringify(normalizeRoles(roles)));
   }
+
+  notifyAuthChanged();
 }
 
 export function getToken() {
@@ -173,6 +195,7 @@ export function clearAuth() {
   localStorage.removeItem(PERMISSIONS_KEY);
   localStorage.removeItem(ROLES_KEY);
   localStorage.removeItem(AUTH_VERIFIED_AT_KEY);
+  notifyAuthChanged();
 }
 
 export function isLoggedIn() {

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import AuthGuard from "./AuthGuard";
 import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
-import { getPermissions, getRoles } from "@/lib/auth";
+import { getPermissions, getRoles, subscribeAuthChanged } from "@/lib/auth";
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -12,10 +12,16 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const [roles, setRoles] = useState<string[]>([]);
 
   useEffect(() => {
-    queueMicrotask(() => {
+    function syncAuthState() {
       setPermissions(getPermissions());
       setRoles(getRoles());
+    }
+
+    queueMicrotask(() => {
+      syncAuthState();
     });
+
+    return subscribeAuthChanged(syncAuthState);
   }, []);
 
   return (
