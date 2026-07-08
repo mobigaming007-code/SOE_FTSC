@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useCallback, useEffect, useState } from "react";
+import { FormEvent, Suspense, useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import AppShell from "@/components/AppShell";
 import EmployeePicker from "@/components/EmployeePicker";
@@ -23,6 +23,22 @@ function formatEmployeeLabel(item: Payslip) {
 }
 
 export default function PayrollPayslipsPage() {
+  return (
+    <Suspense fallback={<PayrollPayslipsFallback />}>
+      <PayrollPayslipsContent />
+    </Suspense>
+  );
+}
+
+function PayrollPayslipsFallback() {
+  return (
+    <AppShell>
+      <LoadingBlock text="Đang tải phiếu lương..." />
+    </AppShell>
+  );
+}
+
+function PayrollPayslipsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
